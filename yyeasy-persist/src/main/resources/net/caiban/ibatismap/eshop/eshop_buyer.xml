@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="eshopBuyer">
+	<typeAlias alias="buyer" type="net.caiban.domain.eshop.EshopBuyer"/>
+	
+	<resultMap id="buyerResult" class="buyer">
+	    <result property="id" column="id" />
+	    <result property="name" column="name" />
+	    <result property="phone" column="phone" />
+	    <result property="email" column="email" />
+	    <result property="im" column="im" />
+	    <result property="valuable" column="valuable" />
+	    <result property="remark" column="remark" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+	    <result property="gmtcreate" column="gmtcreate" />
+  	</resultMap>
+  	
+  	<delete id="deleteEshopBuyerById" parameterClass="java.lang.Integer">
+	    delete from eshop_buyer
+	    where id=#value#
+  	</delete>
+  	
+  	<select id="countPageEshopBuyer" parameterClass="java.util.HashMap" resultClass="java.lang.Integer">
+	    select count(eb.id) from eshop_buyer eb
+	    
+	    <dynamic prepend="where">
+	    	<isNotEmpty prepend="and" property="buyer.name">
+			 	eb.name like CONCAT('%',#buyer.name:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.phone">
+			 	eb.phone like CONCAT('%',#buyer.phone:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.email">
+			 	eb.email like CONCAT('%',#buyer.email:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.im">
+			 	eb.im like CONCAT('%',#buyer.im:VARCHAR#,'%') 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="buyer.valuable">
+			 	eb.valuable = #buyer.valuable# 
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="buyer.eid" >
+				eb.eid = #buyer.eid# 
+			</isNotNull>
+			<isGreaterThan prepend="and" property="buyer.uid" compareValue="0">
+				eb.uid = #buyer.uid#
+			</isGreaterThan>
+			
+	    </dynamic>
+  	</select>
+  	
+  	<select id="pageEshopBuyer" parameterClass="java.util.HashMap" resultMap="buyerResult">
+	    select eb.id,eb.name,eb.phone,eb.email,eb.im,eb.valuable,eb.remark,eb.eid,eb.uid,eb.gmtcreate
+			from eshop_buyer eb
+	    
+	    <dynamic prepend="where">
+	    	<isNotEmpty prepend="and" property="buyer.name">
+			 	eb.name like CONCAT('%',#buyer.name:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.phone">
+			 	eb.name like CONCAT('%',#buyer.name:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.email">
+			 	eb.email like CONCAT('%',#buyer.email:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="buyer.im">
+			 	eb.im like CONCAT('%',#buyer.im:VARCHAR#,'%') 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="buyer.valuable">
+			 	eb.valuable = #buyer.valuable#
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="buyer.eid" >
+				eb.eid = #buyer.eid# 
+			</isNotNull>
+			<isNotNull  prepend="and" property="buyer.uid" >
+				eb.uid = #buyer.uid# 
+			</isNotNull>
+	    </dynamic>
+	    
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+	    
+  	</select>
+  	
+  	<insert id="createEshopBuyer" parameterClass="buyer">
+		insert into eshop_buyer (name,phone,email,im,valuable,remark,eid,uid,gmtcreate)
+			values (#name#,#phone#,#email#,#im#,#valuable#,#remark#,#eid#,#uid#,now())
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<select id="listOneEshopBuyerById"  parameterClass="java.util.HashMap" resultMap="buyerResult">
+	    select eb.id,eb.name,eb.phone,eb.email,eb.im,eb.valuable,eb.remark,eb.eid,eb.uid,eb.gmtcreate
+			from eshop_buyer eb
+			where eb.id = #id# and eb.eid=#eid#
+	</select>
+	
+	<update id="updateEshopBuyer" parameterClass="buyer">
+	    update eshop_buyer set
+	    	name = #name#,
+	    	phone = #phone#,
+	    	email = #email#,
+	    	im = #im#,
+	    	valuable = #valuable#,
+	    	remark = #remark#
+	    where id=#id#
+  	</update>
+  	
+  	<select id="listEshopBuyerByName" parameterClass="java.util.HashMap" resultMap="buyerResult">
+	    select eb.id,eb.name,eb.phone,eb.email,eb.im,eb.valuable,eb.remark,eb.eid,eb.uid,eb.gmtcreate
+			from eshop_buyer eb
+	    <dynamic prepend="where">
+	    	<isNotEmpty prepend="and" property="name">
+			 	eb.name like CONCAT('%',#name:VARCHAR#,'%') 
+			</isNotEmpty>
+			<isNotNull  prepend="and" property="eid" >
+				eb.eid = #eid# 
+			</isNotNull>
+			<isNotNull  prepend="and" property="uid" >
+				eb.uid = #uid# 
+			</isNotNull>
+	    </dynamic>
+	    order by id
+	    limit #maxNum#
+  	</select>
+  	
+</sqlMap>

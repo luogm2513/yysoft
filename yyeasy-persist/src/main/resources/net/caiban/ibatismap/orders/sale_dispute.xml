@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="saleDispute">
+	<typeAlias alias="saleDispute" type="net.caiban.domain.orders.SaleDispute"/>
+	<typeAlias alias="saleDisputeDto" type="net.caiban.dto.orders.SaleDisputeDto"/>
+	<typeAlias alias="orders" type="net.caiban.domain.orders.Orders"/>
+	
+	<resultMap  id="saleDisputeDtoResult" class="saleDisputeDto">
+		<result property="saleDispute" resultMap="saleDispute.saleDisputeResult"/>
+		<result property="orders" resultMap="saleDispute.ordersResult"/>
+	</resultMap>
+	
+	<resultMap id="ordersResult" class="orders">
+	    <result property="id" column="order_id" />
+	    <result property="orderNo" column="order_no" />
+  	</resultMap>
+  	
+  	<resultMap id="saleDisputeResult" class="saleDispute">
+  		<result property="id" column="id" />
+  		<result property="orderId" column="order_id" />
+  		<result property="returnGoods" column="return_goods" />
+  		<result property="reparation" column="reparation" />
+  		<result property="remark" column="remark" />
+  		<result property="period" column="period" />
+  		<result property="severity" column="severity" />
+  		<result property="resolved" column="resolved" />
+  		<result property="resolvedUid" column="resolved_uid" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+	    <result property="gmtcreate" column="gmtcreate" />
+  	</resultMap>
+  	
+  	<sql id="selectSimpleSaleDisputeColumns" >
+  			sd.id,
+  			sd.order_id,
+  			sd.return_goods,
+  			sd.reparation,
+  			sd.remark,
+  			sd.period,
+  			sd.severity,
+  			sd.resolved,
+  			sd.resolved_uid,
+  			sd.uid,
+  			sd.eid,
+  			sd.gmtcreate
+  	</sql>
+  	
+  	<sql id="dynamicWhereForPageSaleDispute">
+  		<dynamic prepend="where" >
+  			<isNotNull  prepend="and" property="dto.saleDispute.eid" >
+				sd.eid = #dto.saleDispute.eid#
+			</isNotNull>
+			<isNotNull  prepend="and" property="dto.saleDispute.uid" >
+				sd.uid = #dto.saleDispute.uid#
+			</isNotNull>
+			
+			<!-- 
+			<isNotEmpty prepend="and" property="dto.saleDispute.resolved">
+			 	sd.resolved = #dto.saleDispute.resolved#
+			</isNotEmpty>
+			 -->
+			<isNotEmpty property="dto.resolvedArray">
+				<iterate prepend="and" property="dto.resolvedArray" open="(" close=")" conjunction="OR">
+					sd.resolved = #dto.resolvedArray[]#
+				</iterate>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="dto.saleDispute.resolvedUid">
+			 	sd.resolved_uid = #dto.saleDispute.resolvedUid#
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="dto.periodMin" >
+				sd.period >= #dto.periodMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.periodMax" >
+				#dto.periodMax# >= sd.period
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.reparationMin" >
+				sd.reparation >= #dto.reparationMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.reparationMax" >
+				#dto.reparationMax# >= sd.reparation
+			</isNotNull>
+			
+  		</dynamic>
+  	</sql>
+  	
+  	<insert id="createSaleDispute" parameterClass="saleDispute">
+  		insert into sale_dispute(order_id,return_goods,reparation,remark,period,severity,resolved,resolved_uid,uid,eid,gmtcreate)
+  		values(#orderId#,#returnGoods#,#reparation#,#remark#,#period#,#severity#,#resolved#,#resolvedUid#,#uid#,#eid#,now())
+  		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<select id="countPageSaleDispute" parameterClass="java.util.HashMap" resultClass="java.lang.Integer">
+  		select count(*) from sale_dispute sd
+  		<include refid="saleDispute.dynamicWhereForPageSaleDispute" />
+  	</select>
+  	
+  	<select id="listOneSaleDisputeById" parameterClass="java.util.HashMap" resultMap="saleDisputeResult">
+  		select
+  			<include refid="saleDispute.selectSimpleSaleDisputeColumns"/>
+  			from sale_dispute sd
+  		where sd.id=#id# and sd.eid=#eid#
+  	</select>
+  	
+  	<select id="pageSaleDispute" parameterClass="java.util.HashMap" resultMap="saleDisputeDtoResult">
+  		select 
+  			<include refid="saleDispute.selectSimpleSaleDisputeColumns"/>
+  			,o.order_no
+  		from
+  			sale_dispute sd
+		inner join orders o on o.id = sd.order_id
+  			<include refid="saleDispute.dynamicWhereForPageSaleDispute" />
+  			<include refid="common.pageOrderBy"/>
+  			<include refid="common.pageLimit"/>
+  	</select>
+  	
+  	<update id="updateResolvedStatus" parameterClass="java.util.HashMap" >
+  		update sale_dispute 
+  			set resolved=#status#,
+  			resolved_uid=#resolvedUid#
+  		where id = #id# and eid=#eid#
+  	</update>
+  	
+  	<update id="updateSaleDisputeSimple" parameterClass="saleDispute" >
+  		update sale_dispute 
+  			set return_goods=#returnGoods#,
+  			reparation=#reparation#,
+  			remark=#remark#,
+  			period=#period#,
+  			severity=#severity#,
+  			resolved=#resolved#
+  		where id = #id# and eid=#eid#
+  	</update>
+  	
+  	<update id="updateResolvedById" parameterClass="java.util.HashMap" >
+  		update sale_dispute 
+  			set resolved=#resolved#
+  		where id = #id# and eid=#eid#
+  	</update>
+  	
+  	<delete id="deleteSaleDisputeById" parameterClass="java.util.HashMap" >
+  		delete from sale_dispute
+  		where eid=#eid# and id=#id#
+  	</delete>
+  	
+</sqlMap>

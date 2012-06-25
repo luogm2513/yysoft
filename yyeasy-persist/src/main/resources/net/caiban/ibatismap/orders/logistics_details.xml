@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="logisticsDetails">
+	<typeAlias alias="logisticsDetails" type="net.caiban.domain.orders.LogisticsDetails"/>
+	
+	<resultMap id="logisticsDetailsResult" class="logisticsDetails">
+	    <result property="id" column="id" />
+	    <result property="orderId" column="order_id" />
+	    <result property="logisticsId" column="logistics_id" />
+	    <result property="expressNo" column="express_no" />
+	    <result property="costs" column="costs" />
+	    <result property="gmtReceive" column="gmt_receive" />
+	    <result property="gmtSend" column="gmt_send" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+	    <result property="gmtcreate" column="gmtcreate" />
+  	</resultMap>
+  	
+  	
+  	<insert id="createLogisticsDetails" parameterClass="logisticsDetails">
+		insert into logistics_details (order_id,logistics_id,express_no,costs,gmt_receive,gmt_send,uid,eid,gmtcreate)
+			values (#orderId#,#logisticsId#,#expressNo#,#costs#,#gmtReceive#,#gmtSend#,#uid#,#eid#,now())
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<update id="updateLogisticsDetailsByOrdersId" parameterClass="logisticsDetails" >
+  		update logistics_details set
+  			gmt_receive=#gmtReceive#,
+  			logistics_id=#logisticsId#,
+  			express_no=#expressNo#,
+  			costs=#costs#
+  		where order_id=#orderId# and eid=#eid#
+  	</update>
+  	
+</sqlMap>

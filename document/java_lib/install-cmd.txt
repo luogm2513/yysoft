@@ -1,0 +1,4 @@
+mvn install:install-file -DgroupId=net.spy -DartifactId=spymemcached -Dversion=2.5rc1 -Dpackaging=jar -Dfile=G:\JAVA_YYEASY\document\java_lib\memcached-2.5rc1.jar
+mvn install:install-file -DgroupId=com.googlecode -DartifactId=jsonplugin -Dversion=0.31 -Dpackaging=jar -Dfile=G:\JAVA_YYEASY\document\java_lib\jsonplugin-0.31.jar
+mvn install:install-file -DgroupId=com.googlecode -DartifactId=jsonplugin -Dversion=0.34 -Dpackaging=jar -Dfile=G:\JAVA_YYEASY\document\java_lib\jsonplugin-0.34.jar
+mvn install:install-file -DgroupId=org.apache.struts -DartifactId=struts2-json-plugin -Dversion=2.1.8 -Dpackaging=jar -Dfile=G:\JAVA_YYEASY\document\java_lib\jsonplugin-0.34.jar

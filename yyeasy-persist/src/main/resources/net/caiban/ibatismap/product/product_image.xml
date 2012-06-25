@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="productImage">
+	<typeAlias alias="image" type="net.caiban.domain.product.ProductImage"/>
+	
+	<resultMap id="imageResult" class="image">
+	    <result property="id" column="id" />
+	    <result property="productId" column="product_id" />
+	    <result property="filename" column="filename" />
+	    <result property="filetype" column="filetype" />
+	    <result property="filepath" column="filepath" />
+	    <result property="remark" column="remark" />
+	    <result property="gmtcreate" column="gmtcreate" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+  	</resultMap>
+  	
+  	<select id="listImageByProductId" parameterClass="java.lang.Integer" resultMap="imageResult" >
+	    select pi.id,pi.product_id,pi.filename,pi.filetype,pi.filepath,pi.remark,pi.gmtcreate,pi.uid,pi.eid
+	    from product_image pi
+	    where pi.product_id=#value#
+  	</select>
+  	
+  	<insert id="createImage" parameterClass="image">
+		insert into product_image (product_id,filename,filetype,filepath,remark,gmtcreate,uid,eid)
+			values (#productId#,#filename#,#filetype#,#filepath#,#remark#,now(),#uid#,#eid#)
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<delete id="deleteImageByProductId" parameterClass="java.lang.Integer">
+	    delete from product_image
+	    where product_id = #value#
+  	</delete>
+  	
+  	<delete id="deleteImageById" parameterClass="java.lang.Integer">
+	    delete from product_image
+	    where id = #value#
+  	</delete>
+  	
+</sqlMap>

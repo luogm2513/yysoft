@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="authUser">
+	<typeAlias alias="user" type="net.caiban.auth.domain.AuthUser"/>
+	
+	<resultMap id="userResult" class="user">
+	    <result property="id" column="id" />
+	    <result property="deptId" column="dept_id"/>
+	    <result property="username" column="username"/>
+	    <result property="password" column="password"/>
+	    <result property="email" column="email"/>
+	    <result property="gmtCreated" column="gmt_created"/>
+	    <result property="gmtLogin" column="gmt_login"/>
+	    <result property="blocked" column="blocked"/>
+  	</resultMap>
+  	
+  	<select id="listUserInRole" parameterClass="java.util.HashMap" resultMap="userResult" >
+	    select u.id,u.dept_id,u.username,u.password,u.email,u.gmt_created,u.gmt_login,u.blocked
+	    from auth_user u
+	    inner join auth_user_role ur on ur.user_id = u.id
+	    where ur.role_id = #roleid#
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="user.username">
+			 	u.username like CONCAT(#user.username:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+			<isNotNull  prepend="and" property="user.blocked" >
+				u.blocked = #user.blocked#
+			</isNotNull>
+	    </dynamic>
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				p.$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+  	</select>
+  	
+  	<select id="countUserInRole" parameterClass="java.util.HashMap" resultClass="java.lang.Integer" >
+	    select count(u.id)
+	    from auth_user u
+	    inner join auth_user_role ur on ur.user_id = u.id
+	    where ur.role_id = #roleId#
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="user.username">
+			 	u.username like CONCAT(#user.username:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+			<isNotNull  prepend="and" property="user.blocked" >
+				u.blocked = #user.blocked#
+			</isNotNull>
+	    </dynamic>
+  	</select>
+  	
+  	<select id="listUserNotInRole" parameterClass="java.util.HashMap" resultMap="userResult" >
+	    select u.id,u.dept_id,u.username,u.password,u.email,u.gmt_created,u.gmt_login,u.blocked
+	    from auth_user u
+	    where u.id not in (select user_id from auth_user_role where role_id=#roleid#)
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="user.username">
+			 	u.username like CONCAT(#user.username:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+			<isNotNull  prepend="and" property="user.blocked" >
+				u.blocked = #user.blocked#
+			</isNotNull>
+	    </dynamic>
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				p.$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+  	</select>
+  	
+  	<select id="countUserNotInRole" parameterClass="java.util.HashMap" resultClass="java.lang.Integer" >
+	    select count(u.id)
+	    from auth_user u
+	    where u.id not in (select user_id from auth_user_role where role_id=#roleid#)
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="user.username">
+			 	u.username like CONCAT(#user.username:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+			<isNotNull  prepend="and" property="user.blocked" >
+				u.blocked = #user.blocked#
+			</isNotNull>
+	    </dynamic>
+  	</select>
+  	
+  	<insert id="createUserRole" parameterClass="java.util.HashMap">
+		insert into auth_user_role (user_id,role_id)
+			values (#userid#,#roleid#)
+
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<delete id="deleteUserRole" parameterClass="java.util.HashMap">
+	    delete from auth_user_role
+	    where role_id=#roleid# and user_id=#userid#
+  	</delete>
+  	
+  	<select id="listOneUserByEmail" parameterClass="java.lang.String" resultMap="userResult" >
+	    select u.id,u.dept_id,u.username,u.password,u.email,u.gmt_created,u.gmt_login,u.blocked
+	    from auth_user u
+	    where u.email = #value#
+  	</select>
+  	
+  	<select id="listOneUserById" parameterClass="java.lang.Integer" resultMap="userResult" >
+	    select u.id,u.dept_id,u.username,u.password,u.email,u.gmt_created,u.gmt_login,u.blocked
+	    from auth_user u
+	    where u.id = #value#
+  	</select>
+  	
+  	<select id="listOneUserByUsername" parameterClass="java.lang.String" resultMap="userResult" >
+	    select u.id,u.dept_id,u.username,u.password,u.email,u.gmt_created,u.gmt_login,u.blocked
+	    from auth_user u
+	    where u.username = #value#
+  	</select>
+  	
+  	<update id="updatePasswordById" parameterClass="java.util.HashMap">
+  		update auth_user set
+  			password = #password#
+  		where id= #id#
+  	</update>
+  	
+</sqlMap>

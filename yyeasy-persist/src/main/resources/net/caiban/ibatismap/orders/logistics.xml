@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="logistics">
+	<typeAlias alias="logistics" type="net.caiban.domain.orders.Logistics"/>
+	
+	<resultMap id="logisticsResult" class="logistics">
+	    <result property="id" column="id" />
+	    <result property="name" column="name" />
+	    <result property="phone" column="phone" />
+	    <result property="address" column="address" />
+	    <result property="routes" column="routes" />
+	    <result property="arrivalArea" column="arrival_area" />
+	    <result property="remark" column="remark" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+  	</resultMap>
+  	
+  	<select id="listLogisticsWithEid" parameterClass="java.util.HashMap" resultMap="logisticsResult" >
+	    select l.id,l.name,l.phone,l.address,l.routes,l.arrival_area,l.remark,l.uid,l.eid,l.gmtcreate
+	    from logistics l
+	    where l.eid = #logistics.eid#
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="logistics.name">
+			 	l.name like CONCAT(#logistics.name:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.address">
+			 	l.address like CONCAT(#logistics.address:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.routes">
+			 	l.routes like CONCAT(#logistics.routes:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.arrivalArea">
+			 	l.arrival_area like CONCAT(#logistics.arrivalArea:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.uid">
+			 	l.uid = #logistics.uid#
+			</isNotEmpty>
+	    </dynamic>
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+  	</select>
+  	
+  	<select id="countLogisticsWithEid" parameterClass="java.util.HashMap" resultClass="java.lang.Integer" >
+	    select count(l.id)
+	    from logistics l
+	    where l.eid = #logistics.eid#
+	    <dynamic >
+	    	<isNotEmpty prepend="and" property="logistics.name">
+			 	l.name like CONCAT(#logistics.name:VARCHAR#,'%') <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.address">
+			 	l.address like CONCAT(#logistics.address:VARCHAR#,'%')
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.routes">
+			 	l.routes like CONCAT(#logistics.routes:VARCHAR#,'%')
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.arrivalArea">
+			 	l.arrival_area like CONCAT(#logistics.arrivalArea:VARCHAR#,'%')
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.uid">
+			 	l.uid = #logistics.uid#
+			</isNotEmpty>
+	    </dynamic>
+  	</select>
+  	
+  	<select id="listOneLogisticsById" parameterClass="java.lang.Integer" resultMap="logisticsResult" >
+	    select l.id,l.name,l.phone,l.address,l.routes,l.arrival_area,l.remark,l.uid,l.eid,l.gmtcreate
+	    from logistics l
+	    where l.id = #value#
+	    limit 1
+  	</select>
+  	
+  	<insert id="createLogistics" parameterClass="logistics">
+		insert into logistics (name,phone,address,routes,arrival_area,remark,uid,eid,gmtcreate)
+			values (#name#,#phone#,#address#,#routes#,#arrivalArea#,#remark#,#uid#,#eid#,now())
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<delete id="deleteLogisticsById" parameterClass="java.lang.Integer">
+	    delete from logistics
+	    where id=#value#
+  	</delete>
+  	
+  	<update id="updateLogisticsById" parameterClass="logistics" >
+  		update logistics set
+  			name=#name#,
+  			phone=#phone#,
+  			address=#address#,
+  			routes=#routes#,
+  			arrival_area=#arrivalArea#,
+  			remark=#remark#
+  		where id = #id#
+  	</update>
+  	
+  	<select id="search" parameterClass="java.util.HashMap" resultMap="logisticsResult" >
+	    select l.id,l.name,l.phone,l.address,l.routes,l.arrival_area,l.remark,l.uid,l.eid,l.gmtcreate
+	    from logistics l
+	    <dynamic prepend="where" >
+	    	<isNotEmpty prepend="and" property="logistics.eid">
+			 	l.eid =#logistics.eid#
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.name">
+			 	l.name = #logistics.name:VARCHAR#
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.address">
+			 	l.address like CONCAT(#logistics.address:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.routes">
+			 	l.routes like CONCAT(#logistics.routes:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.arrivalArea">
+			 	l.arrival_area like CONCAT(#logistics.arrivalArea:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="q">
+			 	(l.name like concat('%',#q#,'%') 
+			 		or l.address like concat('%',#q#,'%') 
+			 		or l.routes like concat('%',#q#,'%') 
+			 		or l.arrival_area like concat('%',#q#,'%') )
+			</isNotEmpty>
+	    </dynamic>
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+  	</select>
+  	
+  	<select id="countSearch" parameterClass="java.util.HashMap" resultClass="java.lang.Integer" >
+	    select count(l.id)
+	    from logistics l
+	    <dynamic prepend="where" >
+	    	<isNotEmpty prepend="and" property="logistics.eid">
+			 	l.eid =#logistics.eid#
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.name">
+			 	l.name = #logistics.name:VARCHAR#
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.address">
+			 	l.address like CONCAT(#logistics.address:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.routes">
+			 	l.routes like CONCAT(#logistics.routes:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="logistics.arrivalArea">
+			 	l.arrival_area like CONCAT(#logistics.arrivalArea:VARCHAR#,'%')  <!-- 只做前匹配 -->
+			</isNotEmpty>
+	    	<isNotEmpty prepend="and" property="q">
+			 	(l.name like concat('%',#q#,'%') 
+			 		or l.address like concat('%',#q#,'%') 
+			 		or l.routes like concat('%',#q#,'%') 
+			 		or l.arrival_area like concat('%',#q#,'%') )
+			</isNotEmpty>
+	    </dynamic>
+  	</select>
+  	
+</sqlMap>

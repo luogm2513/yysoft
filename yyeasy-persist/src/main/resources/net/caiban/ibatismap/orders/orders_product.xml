@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ordersProduct">
+	<typeAlias alias="ordersProduct" type="net.caiban.domain.orders.OrdersProduct"/>
+	<typeAlias alias="product" type="net.caiban.domain.product.Product"/>
+	<typeAlias alias="ordersProductDto" type="net.caiban.dto.orders.OrdersProductDto"/>
+	
+	<resultMap  id="ordersProductDtoResult" class="ordersProductDto">
+		<result property="ordersProduct" resultMap="ordersProduct.ordersProductResult"/>
+		<result property="product" resultMap="ordersProduct.productResult"/>
+	</resultMap>
+	
+	<resultMap id="ordersProductResult" class="ordersProduct">
+	    <result property="id" column="id" />
+	    <result property="productId" column="product_id" />
+	    <result property="ordersId" column="orders_id" />
+		<result property="quantity" column="quantity" />
+		<result property="priceDiscount" column="price_discount" />
+  	</resultMap>
+  	
+  	<resultMap id="productResult" class="product">
+  		<result property="id" column="product_id" />
+	    <result property="name" column="product_name" />
+	    <result property="priceSale" column="product_price_sale" />
+  	</resultMap>
+  	
+  	<sql id="selectSimpleOrdersProductColumns" >
+  			op.id,
+  			op.orders_id,
+  			op.product_id,
+  			op.price_discount,
+  			op.quantity
+  	</sql>
+  	
+  	<!-- 最多允许摘取100条记录 -->
+  	<select id="listOrdersProductByOrdersId" parameterClass="java.lang.Integer" resultMap="ordersProductDtoResult">
+  		select 
+  			<include refid="ordersProduct.selectSimpleOrdersProductColumns"/>
+  			,p.name as product_name,p.price_sale as product_price_sale
+  		from
+  			orders_product op
+  		left join product p on op.product_id=p.id
+  		where orders_id=#value#
+  		limit 100
+  	</select>
+  	
+  	<insert id="createOrdersProduct" parameterClass="ordersProduct" >
+  		insert into orders_product(product_id,orders_id,price_discount,quantity)
+  		values(#productId#,#ordersId#,#priceDiscount#,#quantity#)
+  		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	
+  	<delete id="clearOrdersProductByOrdersId" parameterClass="java.lang.Integer" >
+  		delete from orders_product where orders_id=#value#
+  	</delete>
+  	
+</sqlMap>

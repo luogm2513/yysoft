@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="authRight">
+	<typeAlias alias="right" type="net.caiban.auth.domain.AuthRight"/>
+
+	<resultMap id="rightResult" class="right">
+	    <result property="id" column="id" />
+	    <result property="parentId" column="parent_id"/>
+	    <result property="name" column="name"/>
+	    <result property="content" column="content"/>
+	    <result property="l" column="l"/>
+	    <result property="r" column="r"/>
+	    <result property="menu" column="menu"/>
+	    <result property="menuUrl" column="menu_url"/>
+	    <result property="menuCss" column="menu_css"/>
+	    <result property="gmtCreated" column="gmt_created"/>
+  	</resultMap>
+
+  	<select id="listRightById" resultMap="rightResult" parameterClass="java.lang.Integer">
+	    select id,parent_id, name, content, l, r, menu, menu_url, menu_css, gmt_created
+	    from auth_right
+	    where id=#value#
+	    order by l
+  	</select>
+
+  	<select id="listRightByParent" resultMap="rightResult" parameterClass="java.lang.Integer">
+	    select id,parent_id, name, content, l, r, menu, menu_url, menu_css, gmt_created
+	    from auth_right
+	    where parent_id=#value#
+	    order by l
+  	</select>
+
+  	<select id="listRightByLR" resultMap="rightResult" parameterClass="java.util.HashMap">
+	    <![CDATA[
+	    select id,parent_id, name, content, l, r, menu, menu_url, menu_css, gmt_created
+	    from auth_right
+	    where l > #left# and l < #right#
+	    order by l
+	    ]]>
+  	</select>
+
+  	<select id="listRightInRole" resultMap="rightResult" parameterClass="java.util.HashMap">
+	    <![CDATA[
+	    select ar.id,ar.parent_id, ar.name, ar.content, ar.l, ar.r, ar.menu, ar.menu_url, ar.menu_css, ar.gmt_created
+	    from auth_role_right arr
+	    inner join auth_right ar on arr.right_id=ar.id
+	    where arr.role_id=#roleid# and (ar.l > #left# and ar.l < #right#)
+	    order by l
+	    ]]>
+  	</select>
+
+  	<select id="listRightNotInRole" resultMap="rightResult" parameterClass="java.util.HashMap">
+	    <![CDATA[
+		    select ar.id,ar.parent_id, ar.name, ar.content, ar.l, ar.r, ar.menu, ar.menu_url, ar.menu_css, ar.gmt_created
+			from auth_right ar
+			where (ar.l > #left# and ar.l < #right#)
+			and ar.id not in(select right_id from auth_role_right where role_id = #roleid#)
+		    order by l
+	    ]]>
+  	</select>
+
+  	<select id="queryMaxRight" resultClass="java.lang.Integer">
+		    select max(r) from auth_right
+  	</select>
+
+  	<update id="updateRightBaseInfo" parameterClass="right">
+	    update auth_right set
+	    	name = #name#,
+	    	content = #content#,
+	    	menu = #menu#,
+	    	menu_url = #menuUrl#,
+	    	menu_css = #menuCss#
+	    where
+	      	id = #id#
+  	</update>
+
+  	<insert id="createRight" parameterClass="right">
+		insert into auth_right (parent_id, name, content, l, r, menu, menu_url, menu_css, gmt_created)
+			values(#parentId#,#name#,#content#,#l#,#r#,#menu#,#menuUrl#,#menuCss#,now())
+		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+
+  	<update id="updateLeftForCreate" parameterClass="java.lang.Integer">
+	    update auth_right set
+	    	l=l+2
+	    where l>=#value#
+  	</update>
+
+  	<update id="updateRightForCreate" parameterClass="java.lang.Integer">
+	    update auth_right set
+	    	r=r+2
+	    where r>=#value#
+  	</update>
+
+	<update id="updateLeftForDelete" parameterClass="java.util.HashMap">
+	    update auth_right set
+	    	l=l-(#right#-#left#+1)
+	    where l>#left#
+  	</update>
+
+  	<update id="updateRightForDelete" parameterClass="java.util.HashMap">
+	    update auth_right set
+	    	r=r-(#right#-#left#+1)
+	    where r>=#right#
+  	</update>
+
+  	<delete id="deleteRightByLR" parameterClass="java.util.HashMap">
+	    delete from auth_right
+	    where l between #left# and #right#
+  	</delete>
+
+  	<delete id="deleteRoleRightByRight" parameterClass="java.lang.Integer">
+	    delete from auth_role_right
+	    where right_id=#value#
+  	</delete>
+
+  	<delete id="deleteRoleRightByParentRight" parameterClass="java.util.HashMap">
+	    delete from auth_role_right
+	    where right_id in
+	    	(select id from auth_right where l between #left# and #right# )
+  	</delete>
+  	
+  	<select id="listUserRightByUsername" resultMap="rightResult" parameterClass="java.lang.String">
+	    select r.id,r.parent_id, r.name, r.content, r.l, r.r, r.menu, r.menu_url, r.menu_css, r.gmt_created
+	    from auth_right r
+	    inner join auth_role_right rr on rr.right_id = r.id
+	    inner join auth_role ro on ro.id = rr.role_id
+	    inner join auth_user_role ur on ur.role_id=ro.id
+	    inner join auth_user u on u.id=ur.user_id
+	    where u.username=#value#
+	    order by l
+  	</select>
+  	
+  	<select id="listUserRightByParent" resultMap="rightResult" parameterClass="java.util.HashMap">
+	    select r.id,r.parent_id, r.name, r.content, r.l, r.r, r.menu, r.menu_url, r.menu_css, r.gmt_created
+	    from auth_right r
+	    inner join auth_role_right rr on rr.right_id = r.id
+	    inner join auth_role ro on ro.id = rr.role_id
+	    inner join auth_user_role ur on ur.role_id=ro.id
+	    inner join auth_user u on u.id=ur.user_id
+	    where u.username=#username# and r.parent_id=#parentid#
+	    order by l
+  	</select>
+</sqlMap>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="orders">
+	<typeAlias alias="orders" type="net.caiban.domain.orders.Orders"/>
+	<typeAlias alias="ordersDto" type="net.caiban.dto.orders.OrdersDto"/>
+	<typeAlias alias="buyer" type="net.caiban.domain.eshop.EshopBuyer"/>
+	
+	<resultMap  id="ordersDtoResult" class="ordersDto">
+		<result property="orders" resultMap="orders.ordersResult"/>
+		<result property="buyer" resultMap="orders.buyerResult"/>
+	</resultMap>
+	
+	<resultMap id="ordersResult" class="orders">
+	    <result property="id" column="id" />
+	    <result property="orderNo" column="order_no" />
+	    <result property="orderNoTaobao" column="order_no_taobao" />
+	    <result property="buyerId" column="buyer_id" />
+	    <result property="payment" column="payment" />
+	    <result property="totalOrderCash" column="total_order_cash" />
+	    <result property="totalProductCash" column="total_product_cash" />
+	    <result property="paid" column="paid" />
+	    <result property="gmtOrder" column="gmt_order" />
+	    <result property="orderStatus" column="order_status" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+	    <result property="gmtcreate" column="gmtcreate" />
+  	</resultMap>
+  	
+  	<resultMap id="buyerResult" class="buyer">
+  		<result property="id" column="buyer_id" />
+	    <result property="name" column="buyer_name" />
+	    <result property="phone" column="buyer_phone" />
+  	</resultMap>
+  	
+  	<sql id="selectSimpleOrdersColumns" >
+  			o.id,
+  			o.order_no,
+  			o.order_no_taobao,
+  			o.buyer_id,
+  			o.payment,
+  			o.total_order_cash,
+  			o.total_product_cash,
+  			o.paid,
+  			o.gmt_order,
+  			o.order_status,
+  			o.uid,
+  			o.eid,
+  			o.gmtcreate
+  	</sql>
+  	
+  	<sql id="dynamicWhereForPageOrders">
+  		<dynamic prepend="where" >
+  			<isNotNull  prepend="and" property="dto.orders.eid" >
+				o.eid = #dto.orders.eid#
+			</isNotNull>
+			<isNotNull  prepend="and" property="dto.orders.uid" >
+				o.uid = #dto.orders.uid#
+			</isNotNull>
+			
+			<isNotEmpty prepend="and" property="dto.orders.orderNo">
+			 	o.order_no like CONCAT(#dto.orders.orderNo:VARCHAR#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="dto.orders.orderNoTaobao">
+			 	o.order_no_taobao like CONCAT(#dto.orders.orderNo:VARCHAR#,'%')
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="dto.orders.buyerId" >
+				o.buyer_id = #dto.orders.buyerId#
+			</isNotNull>
+			<isNotNull  prepend="and" property="dto.orders.payment" >
+				o.payment = #dto.orders.payment#
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.gmtOrderMin" >
+				o.gmt_order >= #dto.gmtOrderMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.gmtOrderMax" >
+				#dto.gmtOrderMax# >= o.gmt_order
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.totalOrderCashMin" >
+				o.total_order_cash >= #dto.totalOrderCashMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.totalOrderCashMax" >
+				#dto.totalOrderCashMax# >= o.total_order_cash
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.totalProductCashMin" >
+				o.total_product_cash >= #dto.totalProductCashMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.totalProductCashMax" >
+				#dto.totalProductCashMax# >= o.total_product_cash
+			</isNotNull>
+			
+			<isNotEmpty property="dto.orderStatusArray">
+				<iterate prepend="and" property="dto.orderStatusArray" open="(" close=")" conjunction="OR">
+					o.order_status = #dto.orderStatusArray[]#
+				</iterate>
+			</isNotEmpty>
+			
+  		</dynamic>
+  	</sql>
+  	
+  	<delete id="deleteOrdersById" parameterClass="java.util.HashMap" >
+  		delete from orders where id=#id# and  #status#>order_status
+  	</delete>
+  	
+  	<select id="countPageOrders" parameterClass="java.util.HashMap" resultClass="java.lang.Integer">
+  		select count(id) from orders o
+  		<include refid="orders.dynamicWhereForPageOrders" />
+  	</select>
+  	
+  	<select id="pageOrdersDto" parameterClass="java.util.HashMap" resultMap="ordersDtoResult">
+  		select 
+  			<include refid="orders.selectSimpleOrdersColumns"/>
+  			,b.name as buyer_name,b.phone as buyer_phone
+  		from
+  			orders o
+  		left join eshop_buyer b on o.buyer_id = b.id
+  			<include refid="orders.dynamicWhereForPageOrders" />
+  			<include refid="common.pageOrderBy"/>
+  			<include refid="common.pageLimit"/>
+  	</select>
+  	
+  	
+  	<insert id="createSimpleOrders" parameterClass="orders">
+  		insert into orders(order_no,order_no_taobao,buyer_id,payment,total_order_cash,total_product_cash,paid,gmt_order,order_status,uid,eid,gmtcreate)
+  		values(#orderNo#,#orderNoTaobao#,#buyerId#,#payment#,#totalOrderCash#,#totalProductCash#,#paid#,#gmtOrder#,#orderStatus#,#uid#,#eid#,now())
+  		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<select id="listOneOrdersById" parameterClass="java.lang.Integer" resultMap="ordersDtoResult">
+  		select
+  			<include refid="orders.selectSimpleOrdersColumns"/>
+  			,b.name as buyer_name,b.phone as buyer_phone
+  			from orders o
+  			left join eshop_buyer b on o.buyer_id = b.id
+  		where o.id=#value#
+  	</select>
+  	
+  	<select id="listOneOrdersByOrderNo" parameterClass="java.lang.String" resultMap="ordersDtoResult">
+  		select
+  			<include refid="orders.selectSimpleOrdersColumns"/>
+  			,b.name as buyer_name,b.phone as buyer_phone
+  			from orders o
+  			left join eshop_buyer b on o.buyer_id = b.id
+  		where o.order_no = #value#
+  	</select>
+  	
+  	<update id="updateOrderStatusById" parameterClass="java.util.HashMap" >
+  		update orders 
+  			set order_status=#status#
+  		where id = #id# and eid=#eid#
+  	</update>
+
+  	<update id="updateSimpleOrders" parameterClass="orders" >
+  		update orders 
+  			set 
+  				order_no_taobao = #orderNoTaobao#,
+  				buyer_id = #buyerId#,
+  				payment = #payment#,
+  				total_order_cash = #totalOrderCash#,
+  				total_product_cash = #totalProductCash#,
+  				paid = #paid#
+  		where id=#id#
+  	</update>
+</sqlMap>

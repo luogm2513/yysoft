@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="orders" extends="json-default" namespace="/orders">
+	
+		<action name="logistics!*" class="logisticsAction" method="{1}">
+			<result name="index" >/WEB-INF/views/orders/logistics.jsp</result>
+			<result name="extpage" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					page
+				</param>
+			</result>
+			<result name="extresult" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					result
+				</param>
+			</result>
+		</action>
+		
+		<action name="orders!*" class="ordersAction" method="{1}">
+			<result name="index" >/WEB-INF/views/orders/orders.jsp</result>
+			<result name="extpage" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					page
+				</param>
+			</result>
+			<result name="extresult" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					result
+				</param>
+			</result>
+		</action>
+		
+		<action name="saleDispute!*" class="saleDisputeAction" method="{1}">
+			<result name="index" >/WEB-INF/views/orders/saleDispute.jsp</result>
+			<result name="extpage" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					page
+				</param>
+			</result>
+			<result name="extresult" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					result
+				</param>
+			</result>
+		</action>
+		
+	</package>
+</struts>

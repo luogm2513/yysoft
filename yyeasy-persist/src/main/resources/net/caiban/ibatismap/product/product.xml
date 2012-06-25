@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="product">
+	<typeAlias alias="product" type="net.caiban.domain.product.Product"/>
+	<typeAlias alias="category" type="net.caiban.domain.product.ProductCategory"/>
+	<typeAlias alias="productDto" type="net.caiban.dto.product.ProductDto"/>
+	
+	<resultMap id="productDtoResult" class="productDto">
+	    <result property="product" resultMap="product.productResult"/>
+	    <result property="productCategory" resultMap="product.categoryNameResult"/>
+  	</resultMap>
+  	
+  	<resultMap id="productResult" class="product">
+	    <result property="id" column="id" />
+	    <result property="productCategoryId" column="product_category_id" />
+	    <result property="name" column="name" />
+	    <result property="remark" column="remark" />
+	    <result property="model" column="model" />
+	    <result property="pricePurchase" column="price_purchase" />
+	    <result property="priceSale" column="price_sale" />
+	    <result property="unit" column="unit" />
+	    <result property="size" column="size" />
+	    <result property="gmtcreate" column="gmtcreate" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+	</resultMap>
+	
+	<resultMap id="categoryNameResult" class="category">
+	    <result property="id" column="product_category_id" />
+	    <result property="name" column="category_name" />
+	    <result property="del" column="category_del" />
+	</resultMap>
+	
+	<delete id="deleteProductById" parameterClass="java.lang.Integer">
+	    delete from product
+	    where id=#value#
+  	</delete>
+  	
+  	<delete id="deleteProductByCategoryId" parameterClass="java.lang.Integer">
+	    delete from product
+	    where product_category_id = #value#
+  	</delete>
+  	
+  	<insert id="createProduct" parameterClass="product">
+		insert into product (product_category_id,name,remark,model,price_purchase,price_sale,unit,size,gmtcreate,uid,eid)
+			values (#productCategoryId#,#name#,#remark#,#model#,#pricePurchase#,#priceSale#,#unit#,#size#,now(),#uid#,#eid#)
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<select id="listOneProductById" parameterClass="java.lang.Integer" resultMap="productResult" >
+	    select p.id,p.product_category_id,p.name,p.remark,p.model,p.price_purchase,p.price_sale,p.unit,p.size,p.gmtcreate,p.uid,p.eid,
+	    	c.name as category_name,c.del as category_del
+	    from product p
+	    inner join product_category c on p.product_category_id = c.id
+	    where p.id = #value#
+  	</select>
+  	
+  	<select id="pageProductDto" parameterClass="java.util.HashMap" resultMap="productDtoResult" >
+	    select p.id,p.product_category_id,p.name,p.remark,p.model,p.price_purchase,p.price_sale,p.unit,p.size,p.gmtcreate,p.uid,p.eid,
+	    	c.name as category_name,c.del as category_del
+	    from product p
+	    inner join product_category c on p.product_category_id = c.id
+	    <dynamic prepend="where">
+	    	
+	    	<isNotNull  prepend="and" property="dto.product.eid" >
+				p.eid = #dto.product.eid#
+			</isNotNull>
+			<isNotNull  prepend="and" property="dto.product.uid" >
+				p.uid = #dto.product.uid#
+			</isNotNull>
+	    	<isNotEmpty prepend="and" property="dto.product.name">
+			 	p.name like CONCAT(#dto.product.name:VARCHAR#,'%') 
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="dto.pricePurchaseMin" >
+				p.price_purchse >= #dto.pricePurchaseMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.pricePurchaseMax" >
+				#dto.pricePurchaseMax# >= p.price_purchse 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.priceSaleMin" >
+				p.price_sale >= #dto.priceSaleMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.priceSaleMax" >
+				#dto.priceSaleMax# >= p.price_sale 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.gmtcreateMin" >
+				p.gmtcreate >= #dto.gmtcreateMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.gmtcreateMax" >
+				#dto.gmtcreateMax# >= p.gmtcreate 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.productCategory.del" >
+				c.del = #dto.productCategory.del#
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.productCategory.id" >
+				p.product_category_id = #dto.productCategory.id#
+			</isNotNull>
+			
+	    </dynamic>
+	    
+	    <dynamic prepend="order by">
+			<isNotEmpty property="page.sort"> <!-- sort -->
+				p.$page.sort$
+				<isNotEmpty property="page.dir">
+					 $page.dir$
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="limit">
+			<isGreaterThan property="page.limit" compareValue="0">
+				<isGreaterEqual property="page.start" compareValue="0" >
+					#page.start#,#page.limit#
+				</isGreaterEqual>
+			</isGreaterThan>
+		</dynamic>
+  	</select>
+  	
+  	<select id="countPageProductDto" parameterClass="java.util.HashMap" resultClass="java.lang.Integer">
+	    select count(p.id) from product p
+	    inner join product_category c on p.product_category_id = c.id
+	    <dynamic prepend="where">
+	    	
+	    	<isNotNull  prepend="and" property="dto.product.eid" >
+				p.eid = #dto.product.eid#
+			</isNotNull>
+			<isNotNull  prepend="and" property="dto.product.uid" >
+				p.uid = #dto.product.uid#
+			</isNotNull>
+	    	<isNotEmpty prepend="and" property="dto.product.name">
+			 	p.name like CONCAT(#dto.product.name:VARCHAR#,'%') 
+			</isNotEmpty>
+			
+			<isNotNull  prepend="and" property="dto.pricePurchaseMin" >
+				p.price_purchse >= #dto.pricePurchaseMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.pricePurchaseMax" >
+				#dto.pricePurchaseMax# >= p.price_purchse 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.priceSaleMin" >
+				p.price_sale >= #dto.priceSaleMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.priceSaleMax" >
+				#dto.priceSaleMax# >= p.price_sale 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.gmtcreateMin" >
+				p.gmtcreate >= #dto.gmtcreateMin#
+			</isNotNull>
+			<isNotNull prepend="and" property="dto.gmtcreateMax" >
+				#dto.gmtcreateMax# >= p.gmtcreate 
+			</isNotNull>
+			
+			<isNotNull  prepend="and" property="dto.productCategory.del" >
+				c.del = #dto.productCategory.del#
+			</isNotNull>
+			
+						<isNotNull  prepend="and" property="dto.productCategory.id" >
+				p.product_category_id = #dto.productCategory.id#
+			</isNotNull>
+	    </dynamic>
+  	</select>
+  	
+  	<update id="updateProduct" parameterClass="product">
+	    update product set
+	    	product_category_id=#productCategoryId#,
+	    	name=#name#,
+	    	remark=#remark#,
+	    	model=#model#,
+	    	price_purchase=#pricePurchase#,
+	    	price_sale=#priceSale#,
+	    	unit=#unit#,
+	    	size=#size#
+	    where id=#id#
+  	</update>
+  	
+</sqlMap>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="eshop" extends="json-default" namespace="/eshop" >
+	
+		<action name="buyer!*" class="eshopBuyerAction" method="{1}">
+			<result name="index" >/WEB-INF/views/eshop/buyer.jsp</result>
+			<result name="extpage" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					page
+				</param>
+			</result>
+			<result name="extresult" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					result
+				</param>
+			</result>
+			<result name="exttree" type="json">
+				<param name="noCache">true</param>
+				<param name="root">
+					treeNodeList
+				</param>
+			</result>
+		</action>
+	</package>
+</struts>

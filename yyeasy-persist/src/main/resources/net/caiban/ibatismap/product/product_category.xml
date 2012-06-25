@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="productCategory">
+	<typeAlias alias="category" type="net.caiban.domain.product.ProductCategory"/>
+	
+	<resultMap id="categoryResult" class="category">
+	    <result property="id" column="id" />
+	    <result property="name" column="name" />
+	    <result property="parentId" column="parent_id" />
+	    <result property="l" column="l" />
+	    <result property="r" column="r" />
+	    <result property="del" column="del" />
+	    <result property="gmtcreate" column="gmtcreate" />
+	    <result property="uid" column="uid" />
+	    <result property="eid" column="eid" />
+  	</resultMap>
+  	
+  	<insert id="createProductCategory" parameterClass="category">
+		insert into product_category (name,parent_id,l,r,del,gmtcreate,uid,eid)
+			values (#name#,#parentId#,#l#,#r#,#del#,now(),#uid#,#eid#)
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<select id="listOneProductCategoryViaId" parameterClass="java.lang.Integer" resultMap="categoryResult" >
+	    select pc.id,pc.name,pc.parent_id,pc.l,pc.r,pc.del,pc.gmtcreate,pc.uid,pc.eid
+	    from product_category pc
+	    where pc.id=#value#
+	    limit 1
+  	</select>
+  	
+  	<select id="listProductCategoryViaLR" parameterClass="java.util.HashMap" resultMap="categoryResult" >
+	    select pc.id,pc.name,pc.parent_id,pc.l,pc.r,pc.del,pc.gmtcreate,pc.uid,pc.eid
+	    from product_category pc
+	    <![CDATA[
+	    where pc.eid = #eid# and pc.l > #left# and l < #right#
+	    ]]>
+	    order by l
+  	</select>
+  	
+  	<select id="listProductCategoryViaParent" parameterClass="java.util.HashMap" resultMap="categoryResult" >
+	    select pc.id,pc.name,pc.parent_id,pc.l,pc.r,pc.del,pc.gmtcreate,pc.uid,pc.eid
+	    from product_category pc
+	    where pc.eid = #eid# and pc.parent_id = #parentid#
+	    order by l
+  	</select>
+  	
+  	
+  	<update id="updateProductCategoryViaId" parameterClass="category" >
+  		update product_category set
+  			name=#name#
+  		where id = #id#
+  	</update>
+  	
+  	<select id="queryMaxRight"  resultClass="java.lang.Integer">
+	  	select max(r) from product_category
+  	</select>
+  	
+  	<update id="updateLeftForCreate" parameterClass="java.lang.Integer">
+  		update product_category set
+	    	l=l+2
+	    where l>=#value#
+  	</update>
+  	
+  	<update id="updateRightForCreate" parameterClass="java.lang.Integer">
+  		update product_category set
+	    	r=r+2
+	    where r>=#value#
+  	</update>
+  	
+  	<delete id="deleteProductCategoryByLR" parameterClass="java.util.HashMap">
+	    delete from product_category
+	    where l between #left# and #right#
+  	</delete>
+  	
+  	<update id="updateLeftForDelete" parameterClass="java.util.HashMap">
+	    update product_category set
+	    	l=l-(#right#-#left#+1)
+	    where l>#left#
+  	</update>
+
+  	<update id="updateRightForDelete" parameterClass="java.util.HashMap">
+	    update product_category set
+	    	r=r-(#right#-#left#+1)
+	    where r>=#right#
+  	</update>
+  	
+</sqlMap>

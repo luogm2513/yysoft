@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="eshop">
+	<typeAlias alias="eshop" type="net.caiban.domain.eshop.Eshop"/>
+	
+	<resultMap id="eshopResult" class="eshop">
+	    <result property="id" column="id" />
+	    <result property="name" column="name" />
+	    <result property="siteUrl" column="site_url" />
+	    <result property="remark" column="remark" />
+	    <result property="gmtcreate" column="gmtcreate" />
+  	</resultMap>
+  	
+  	<select id="listOneEshopByUid" parameterClass="java.lang.Integer" resultMap="eshopResult" >
+	    select e.id,e.name,e.site_url,e.remark,e.gmtcreate
+	    from eshop e
+	    inner join eshop_account ea on e.id=ea.eid
+	    where ea.uid=#value#
+  	</select>
+  	
+</sqlMap>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<settings useStatementNamespaces="true"	/>
+	
+	<sqlMap resource="net/caiban/ibatismap/common.xml"/>
+	
+	<!--auth map S-->
+	<sqlMap resource="net/caiban/ibatismap/auth/right.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/auth/role.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/auth/user.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/auth/param.xml"/>
+	<!--auth map E-->
+
+	<!--orders map S-->
+	<sqlMap resource="net/caiban/ibatismap/orders/logistics.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/orders/logistics_details.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/orders/orders.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/orders/orders_product.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/orders/sale_dispute.xml"/>
+	<!--orders map E-->
+	
+	<!--eshop map S-->
+	<sqlMap resource="net/caiban/ibatismap/eshop/eshop.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/eshop/eshop_buyer.xml"/>
+	<!--eshop map E-->
+	
+	<!--product map S-->
+	<sqlMap resource="net/caiban/ibatismap/product/product_category.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/product/product.xml"/>
+	<sqlMap resource="net/caiban/ibatismap/product/product_image.xml"/>
+	
+	
+</sqlMapConfig>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="authRole">
+	<typeAlias alias="role" type="net.caiban.auth.domain.AuthRole"/>
+
+	<resultMap id="roleResult" class="role">
+	    <result property="id" column="id" />
+	    <result property="name" column="name"/>
+	    <result property="remark" column="remark"/>
+  	</resultMap>
+
+	<select id="listRole" resultMap="roleResult">
+	    select r.id,r.name,r.remark
+	    from auth_role r
+	    order by id
+  	</select>
+
+  	<insert id="createRole" parameterClass="role">
+		insert into auth_role (name,remark)
+			values (#name#,#remark#)
+
+ 		<selectKey resultClass="java.lang.Integer" keyProperty="id" >
+		  SELECT LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+
+  	<update id="updateRoleById" parameterClass="role">
+	    update auth_role set
+	    	name = #name#,
+	    	remark = #remark#
+	    where
+	      	id = #id#
+  	</update>
+
+  	<insert id="createRoleRight" parameterClass="java.util.HashMap" >
+		insert into auth_role_right (role_id,right_id)
+			values (#roleid#,#rightid#)
+  	</insert>
+
+	<delete id="deleteRoleRight" parameterClass="java.util.HashMap">
+	    delete from auth_role_right
+	    where role_id=#roleid# and right_id=#rightid#
+  	</delete>
+
+  	<delete id="deleteRoleRightByRoleId" parameterClass="java.lang.Integer">
+	    delete from auth_role_right
+	    where role_id=#value#
+  	</delete>
+
+  	<delete id="deleteRoleById" parameterClass="java.lang.Integer">
+	    delete from auth_role
+	    where id=#value#
+  	</delete>
+
+</sqlMap>
